@@ -150,13 +150,22 @@ diff(prec_avg)
 #vector_data@data#point to the data of a vector
 
 ###homework###
+#import spreadsheet
 getwd()
 setwd("C:\\Users\\Sophie\\Documents\\test")
-#test_sheet <- read.csv("test_spreadsheet1.csv", header=T)
-#import spreadsheet
+test_sheet <- read.csv("test_spreadsheet1.csv", header=T,sep="")
+test_sheet#wieso ; als trennungszeichen???
+md <- read.table("test_spreadsheet2.txt", header=T, sep=",")
+md
 #preliminary data checks
 #cut()
-#quantile
+z <- c(1,2,3,4,5,6,7,8,9,10)
+z
+cut(z,5)
+#quantile()
+quantile(z,probs=c(0.25))#25-prozent quantil berechnen
+median(z)
 #sort()
+sort(z,decreasing=T)
 #order()
-
+order(z)
