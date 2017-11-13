@@ -150,6 +150,9 @@ diff(prec_avg)
 #vector_data@data#point to the data of a vector
 
 ###homework###
+getwd()
+setwd("C:\\Users\\Sophie\\Documents\\test")
+#test_sheet <- read.csv("test_spreadsheet1.csv", header=T)
 #import spreadsheet
 #preliminary data checks
 #cut()
