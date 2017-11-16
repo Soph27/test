@@ -18,7 +18,7 @@ X[2,3]
 X[1,1]
 
 #create a data frame or matrix
-numbers_1 <- rnorm(80,mean=0,sd=1)#normal distribution with determined mean and standard deviation
+numbers_1 <- rnorm(80,mean=0,sd=1)#vector of 80 entries with normal distribution with determined mean and standard deviation
 mat_1 <- matrix(numbers_1,nrow=20,ncol=4)#create matrix with 20 rows, 4 columns
 mat_1
 
@@ -28,6 +28,7 @@ names(df_1) <- c("var1","var2","var3","var4")#name column names with name()
 
 #quick look at data
 head(df_1)
+summary(df_1)
 
 df_1[1,1]
 df_1$var1[1:3]#zeige aus spalte var1 die zahlen 1 bis 3
@@ -72,6 +73,10 @@ library(car)#recode commander nutzen (und auch noch andere commands)
 A2 <- recode(A, "0:30=1; 30:70=2; else=3")
 A2
 
+b <- c(1,2,3,4,5,6,7,8,9,10)
+b2 <- recode(b,"1:5=1;5:10=2")#5 wurd als 1 recoded, nicht als 2
+b2
+
 #some stats inbetween
 summary(A)#general summary stats
 sum(A)#general sum
@@ -91,12 +96,13 @@ test[,"B"]#query just "B"
 test$B#query just "B"
 
 #create a data frame with characters and numbers#?????????????????????
-#?df <- data.frame(plot="location_name_1",measure1=runif(100)*1000,measure2=round(runif(100)*100),value=rnorm(100,2,1),ID=rep(LETTERS,100))
+df <- data.frame(plot="location_name_1",measure1=runif(100)*1000,measure2=round(runif(100)*100),value=rnorm(100,2,1),ID=rep(LETTERS,100))
 df
-#?df_2 <- data.frame(plot="location_name_2",measure1=runif(50)*100,measure2=round(runif(50)*10),value=rnorm(50),ID=rep(LETTERS,50))
+df_2 <- data.frame(plot="location_name_2",measure1=runif(50)*100,measure2=round(runif(50)*10),value=rnorm(50),ID=rep(LETTERS,50))
 df_2
-#?df <- rbind(df,df_2)
+df <- rbind(df,df_2)
 df
+length(df[,1])
 
 summary(df)#summary stats
 str(df)#display of structure
@@ -105,12 +111,42 @@ head(df)#return first (or last) part of an object
 
 #plot the whole dataframe but just for plot, measure1 and measure2
 df[,c("plot","measure1","measure2")]
+x <- df#save df into new object x which contains ddf_1 and df_2
+
+plot(df$measure1,df$measure2)
+plot(df$value,df$measure1)
+#install.packages("rgl")
+#library(rgl)
+#plot3d(df$value,df$measure1,df$measure2)
 
 #plot data frame just for line 566 to 570 for plot, measure1 and measure2
 df[566:570,c("plot","measure1","measure2")]
 
 #df[df$value>3.0,].........??????
 
+###more indexing, 14/11/17###now with column values of a data frame
+df[df$value>3.0,]
+df[df$value>3.2 | df$measure1>50,]#above 3.2 OR above 50
+df[df$value>3.2 & df$measure1>50,]#above 3.2 AND above 50
+df$new_col <- df$measure1*df$measure2#add a new column based on product of two others
+
+#query your data using a keyword e.g. `a`(quite simple) for the ID column
+df[grep("a",df$ID,ignore.case=T),]#????????????
+#what happens if ignore.case=F ???????
+
+#create a random list of "yes" and "no"
+x1 <- rbinom(10,size=1,prob=0.5)
+x2 <- factor(x1,labels=c("yes","no"))
+summary(x2)
+levels(x2)
+as.character(x)#conversion to actual characters
+
+#recode it
+library(car)
+recode(x2,"`yes`=`sure`;`no`=`maybe`")
+#or
+ifelse(x2=="no","maybe","sure")#if statement is true use "maybe", if not use "sure"
+#similar to change classes in a raster classification
 
 ###application###
 #plot the data "prec" but just July
@@ -145,9 +181,14 @@ which.min(abs(prec_avg-50))#?????
 diff(prec_avg)
 
 ###application RS###
+#raster data
 #raster_data[[3]]#adress the third layer
 #raster_data@data$...#point to the data in layer x
-#vector_data@data#point to the data of a vector
+#raster_data[]#provides the underlying data (matrix)
+
+#vector data
+#vector_data@data#point to the data of a spatial vector data set
+#vector_data@data$column_name#point to a specific column
 
 ###homework###
 #import spreadsheet
@@ -162,6 +203,7 @@ md
 z <- c(1,2,3,4,5,6,7,8,9,10)
 z
 cut(z,5)
+cut(z,breaks=-2:1)
 #quantile()
 quantile(z,probs=c(0.25))#25-prozent quantil berechnen
 median(z)
@@ -169,3 +211,81 @@ median(z)
 sort(z,decreasing=T)
 #order()
 order(z)
+
+###14/11/17###
+c <- rnorm(10)#generating 10 random numbers
+#newly created numbers are now ordered to the defined area -2:1
+#the new area has three groups
+table(cut(c,breaks=-2:1))#table macht tabelle aus cut...
+#now you can see how often a number of the data c
+#appears in which group
+cut(c,breaks=-2:1)
+c
+
+###matrix###
+#generate a 2x3 matrix
+m1 <- matrix(c(4,7,3,8,9,2),nrow=2)
+m1
+m1[,2]
+m1[2,]
+m1[2,2]
+
+#matrix with defined rows and columns and how to fill it
+m2 <- matrix(c(2,4,3,1,5,7), nrow=2,ncol=3,byrow=TRUE)#c ist data elements, byrow fills matrix by rows
+m2
+
+###raster data in r###
+#str @data you work with dataframes, for raster work with matrix
+install.packages("raster")
+library(raster)
+r1 <- raster(nrows=10, ncols=10)#create empty raster with 10x10 rows and columns
+r1#look at data
+plot(r1)#plot the empty data
+r1[] <- rnorm(100)#100 weil wir 100 cells haben; fill empty raster with 100 random values
+r1#look at data again
+plot(r1)#plot raster
+
+#create a vector(spatial points)
+library(sp)
+poi1 <- cbind(c(rnorm(10)),c(rnorm(10)))#create 10 random coordinate pairs
+poi1#look at output
+poi1.sp <- SpatialPoints(poi1)#convert list of coordinates to a spatial object
+plot(poi1.sp)#empty dataset; plot spatial point dataset
+df <- data.frame(attr1=c("a","b","z","d","e","q","w","r","z","y"),attr2=c(101:110))#creating values
+poi1.spdf <- SpatialPointsDataFrame(poi1.sp,df)#adding values to spatial point data set
+plot(poi1.spdf)#plot spatial points data set
+
+#[[]] brackets for indexing raster objects (or list or moveStacks)
+install.packages("RStoolbox")
+library(RStoolbox)
+lsat
+plot(lsat[[1]])#plot first band
+plot(lsat$B1_dn)#plot first band
+lsat[[2:3]]#query second and third band
+plot(lsat[[2:3]])#plot second and third band
+lsat[[1]]#query band 1
+x <- lsat[[1]]#save first band in a new object
+x <- lsat[[2:3]]#save second and third band in a new object
+#lsat@lsat$B1_dn#point to data in layer 1??????????????????????????
+
+##get data##
+install.packages("move")
+library(move)
+data(lsat)#load/create example data; from RStoolbox and move package
+data(leroy)
+env <- raster(leroy,vals=rnorm(100))#create a raster with the properties (extent and projection of the vector)
+x <- lsat[1:10,]#values of rows one to ten
+x <- lsat[]#all values
+x <- getValues(lsat)#all values
+x <- lsat[lsat==10]#based on logical query; eigentlich muss statt einfachem = doppelt ==, aber das geht nicht!!!!
+x <- lsat[lsat_B1_dn>10]#based on logical query
+x <- extract(env,leroy)#extract raster values based on vector geometry, e.g. move objects or polygons
+x
+plot(x)
+
+#set values
+lsat[] <- rnorm(ncell(lsat))#populate all bands with normally distributed data,ncells=number of entries
+lsat[lsat<0] <- NA#set all values below 0 to NA
+#all values in env set to 0 and poly areas set to one
+env[] <- 0#all values in env set to 0
+env[leroy] <- 1#and leroy areas set to one
