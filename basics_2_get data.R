@@ -74,7 +74,7 @@ A2 <- recode(A, "0:30=1; 30:70=2; else=3")
 A2
 
 b <- c(1,2,3,4,5,6,7,8,9,10)
-b2 <- recode(b,"1:5=1;5:10=2")#5 wurd als 1 recoded, nicht als 2
+b2 <- recode(b,"1:5=1;5:10=2")#5 wurde als 1 recoded, nicht als 2
 b2
 
 #some stats inbetween
@@ -115,9 +115,9 @@ x <- df#save df into new object x which contains ddf_1 and df_2
 
 plot(df$measure1,df$measure2)
 plot(df$value,df$measure1)
-#install.packages("rgl")
-#library(rgl)
-#plot3d(df$value,df$measure1,df$measure2)
+install.packages("rgl")
+library(rgl)
+plot3d(df$value,df$measure1,df$measure2)
 
 #plot data frame just for line 566 to 570 for plot, measure1 and measure2
 df[566:570,c("plot","measure1","measure2")]
@@ -131,15 +131,15 @@ df[df$value>3.2 & df$measure1>50,]#above 3.2 AND above 50
 df$new_col <- df$measure1*df$measure2#add a new column based on product of two others
 
 #query your data using a keyword e.g. `a`(quite simple) for the ID column
-df[grep("a",df$ID,ignore.case=T),]#????????????
-#what happens if ignore.case=F ???????
+df[grep("a",df$ID,ignore.case=T),]#grep() looks for matches to the argument
+#what happens if ignore.case=F #angezeigt wird <0 Zeilen> (oder row.names mit Länge 0)??????????
 
 #create a random list of "yes" and "no"
 x1 <- rbinom(10,size=1,prob=0.5)
-x2 <- factor(x1,labels=c("yes","no"))
+x2 <- factor(x1,labels=c("yes","no"))# factor()encodes a vector as a factor
 summary(x2)
 levels(x2)
-as.character(x)#conversion to actual characters
+as.character(x2)#conversion to actual characters
 
 #recode it
 library(car)
@@ -175,7 +175,8 @@ range(prec_avg)
 which.min(prec_avg)
 
 #which is closest to value x
-which.min(abs(prec_avg-50))#?????
+which.min(abs(prec_avg-50))#Antwort ist 3, also März
+which.min(prec_avg-50)#Antwort ist 2, also Februar
 
 #difference between elements
 diff(prec_avg)
@@ -244,6 +245,9 @@ plot(r1)#plot the empty data
 r1[] <- rnorm(100)#100 weil wir 100 cells haben; fill empty raster with 100 random values
 r1#look at data again
 plot(r1)#plot raster
+#raster_data[[3]]#adress the third layer
+#raster_data@data$...#point to the data in layer x
+#raster_data[]#provides the underlying data (matrix)
 
 #create a vector(spatial points)
 library(sp)
@@ -254,11 +258,16 @@ plot(poi1.sp)#empty dataset; plot spatial point dataset
 df <- data.frame(attr1=c("a","b","z","d","e","q","w","r","z","y"),attr2=c(101:110))#creating values
 poi1.spdf <- SpatialPointsDataFrame(poi1.sp,df)#adding values to spatial point data set
 plot(poi1.spdf)#plot spatial points data set
+#vector_data@data#point to the data of a spatial vector data set
+poi1.spdf@data
+#vector_data@data$column_name#point to a specific column
+poi1.spdf@data$attr1
 
 #[[]] brackets for indexing raster objects (or list or moveStacks)
 install.packages("RStoolbox")
 library(RStoolbox)
 lsat
+lsat[]#provides the underlying data (matrix)
 plot(lsat[[1]])#plot first band
 plot(lsat$B1_dn)#plot first band
 lsat[[2:3]]#query second and third band
@@ -266,26 +275,28 @@ plot(lsat[[2:3]])#plot second and third band
 lsat[[1]]#query band 1
 x <- lsat[[1]]#save first band in a new object
 x <- lsat[[2:3]]#save second and third band in a new object
-#lsat@lsat$B1_dn#point to data in layer 1??????????????????????????
+##raster@raster$B1_dn#point to data in layer 1??????????????????????????
+##lsat@data$B1_dn#wieso geht das nicht??????????????
+lsat@data#point to the data of a raster data set
 
-##get data##
+##get data##????????????????????????????
+#get values
 install.packages("move")
 library(move)
 data(lsat)#load/create example data; from RStoolbox and move package
 data(leroy)
 env <- raster(leroy,vals=rnorm(100))#create a raster with the properties (extent and projection of the vector)
-x <- lsat[1:10,]#values of rows one to ten
+x <- lsat[1:10,]#values of rows one to ten#???????wieso zeigt es nicht nur rows 1 to 10 an?
 x <- lsat[]#all values
 x <- getValues(lsat)#all values
-x <- lsat[lsat==10]#based on logical query; eigentlich muss statt einfachem = doppelt ==, aber das geht nicht!!!!
-x <- lsat[lsat_B1_dn>10]#based on logical query
+x <- lsat[lsat$B1_dn==10]#based on logical query; eigentlich muss statt einfachem = doppelt ==, aber das geht nicht!!!!
+x <- lsat[lsat$B1_dn>10]#based on logical query
 x <- extract(env,leroy)#extract raster values based on vector geometry, e.g. move objects or polygons
 x
 plot(x)
 
 #set values
-lsat[] <- rnorm(ncell(lsat))#populate all bands with normally distributed data,ncells=number of entries
+lsat[] <- rnorm(ncell(lsat))#populate (=bestücken) all bands with normally distributed data,ncells=number of entries
 lsat[lsat<0] <- NA#set all values below 0 to NA
-#all values in env set to 0 and poly areas set to one
 env[] <- 0#all values in env set to 0
 env[leroy] <- 1#and leroy areas set to one
