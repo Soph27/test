@@ -266,7 +266,7 @@ poi1.spdf@data$attr1
 #[[]] brackets for indexing raster objects (or list or moveStacks)
 install.packages("RStoolbox")
 library(RStoolbox)
-lsat
+data(lsat)
 lsat[]#provides the underlying data (matrix)
 plot(lsat[[1]])#plot first band
 plot(lsat$B1_dn)#plot first band
