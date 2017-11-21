@@ -300,3 +300,22 @@ lsat[] <- rnorm(ncell(lsat))#populate (=bestücken) all bands with normally dist
 lsat[lsat<0] <- NA#set all values below 0 to NA
 env[] <- 0#all values in env set to 0
 env[leroy] <- 1#and leroy areas set to one
+
+###21.11.17###
+
+#create data and recode it
+library(car)
+b <- c(1,2,3,4,5,6,7,8,9,10)
+b2 <- recode(b,"1:5=1;5:10=2")
+
+#create data frame and convert it to raster / create a raster from scratch
+#create several raster with random values in a stack
+library(raster)
+r1 <- raster(nrows=10, ncols=10)#create empty raster with 10x10 rows and columns
+r1#look at data
+plot(r1)#plot the empty data
+r1[] <- rnorm(100)#100 weil wir 100 cells haben; fill empty raster with 100 random values
+r1#look at data again
+plot(r1)
+
+
