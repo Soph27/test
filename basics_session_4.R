@@ -2,7 +2,8 @@
 ###Raster Data in R###############################
 
 #load all packages 
-#library()....
+library(RStoolbox)
+library(raster)
 
 ##some more handy functionality##
 
@@ -206,22 +207,34 @@ ndvi <- overlay(band_4,band_3,fun=function(nir,red){(nir-red)/(nir+red)})
 #calc()multilayered (object class: RasterStack or RasterBrick)
 ndnvi <- calc(lsat,fun=function(x){(x[,4]-x[,3])/(x[,4]+x[,3])})
 
-#or same function but also importing the resulting VI image
+#or same function but also importing the resulting VI (Vegetation Indices) image
 #savi computation with automatic data export
-savi <- overlay(band_4,band_3,fun=function(nir,red){(nir-red)/(nir+red+0.5)*(1+0.5)},filename="savi.tif",format="GTiff")
+savi <- overlay(band_4,band_3,fun=function(nir,red){(nir-red)/(nir+red+0.5)*(1+0.5)},filename="savi.tif",format="GTiff")#soil-adjusted VI
 
+#combine NDVI calculation with a function
+fun_ndvi <- function(nir,red){(nir-red)/(nir+red)}
+ndvi <- overlay(band_4,band_3,fun=fun_ndvi)
 
-#######weiter pdf s.67############
+#make yure your function can digest a matrix or vector (vector for processing a single layer, matrix otherwise)
+#calc(...,forcefun=TRUE)#do not loop/query every pixel individually. Vectorize! and set
+#x <- lsat[1:10,]#get an example chunk and start from there
 
-#rvi <- calc(lsat,fun=function(nir,red){(nir/red)})
-#plot(rvi)
+##Vegetation Indices (VI)##
+#rvi <- calc(lsat,fun=function(nir,red){(nir/red)})#gleiches Ergebnis wie in nächster Zeile?
+rvi <- overlay(band_4,band_3,fun=function(nir,red){nir/red})#ratio VI
+plot(rvi)
 
-#msavi <- overlay(band_4,band_3,fun=function(nir,red){2*nir+1-sqrt((2*nir+1)^2-)})
+msavi <- overlay(band_4,band_3,fun=function(nir,red){(2*nir+1-sqrt((2*nir+1)^2-8*(nir-red)))})#modified soil-adjustet VI
+plot(msavi)
 
 #alternative command
 ndvi <- spectralIndices(lsat,red="B3_dn",nir="B4_dn",indices="NDVI")
 plot(ndvi)
 
 #compute all indices using RED and NIR
-VIS <- spectralIndices(lsat,red="B3_dn",nir="B4_dn")#????????mit welchen daten ausprobieren
-plot(VIS)
+VIs <- spectralIndices(lsat,red="B3_dn",nir="B4_dn")
+plot(VIs)
+
+#computing of more indices
+
+#look into indices that use not only RED and NIR bands
