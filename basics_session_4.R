@@ -166,33 +166,52 @@ calc(allbands,fun=sd,filename="allbands_sd.grd")
 
 #esc ausführen bricht laufende Berechnung der Konsole ab
 
-#raster calculation - using overlay() with two or more raster
+#raster calculation - using overlay() with two or more raster#????????????
 #raster_output <- overlay(raster_1,raster_2,fun=function(x,y){return(x+y)})
 
-#overlay with function
-############################hier weiter, pdf S.37
-#transforming raster data
+#overlay with function#????????????????
+#output <- overlay(input1,input2,fun=function(x1_pointing_to_input_1,x2_opinting_to_input_2){(x1-x2)})
+
+#overlay can also be used to export data#????????????????????
+#overlay(raster1,raster2,fun=functionX,filename="my_raster_output.grd")
+
+#use more bands#?????????????
+#raster_output <- overlay(raster_1,raster_2,raster_3,fun=function(x,y,z){return(x*y*z)})
+
+##transforming raster data: reproject and resample
 aggregated <- aggregate(allbands,fact=10,fun=mean)
 
+#resample to different resolution or origin#?????????????????
+#resampled <- resample(allbands,#my_target_raster,method="bilinear")
+
+#reproject to different projection
+reprojected <- reprojectRaster(allbands,crs="+proj=longlat+ellps=WGS84+datum=WGS84+no_defs",method="bilinear")
+
+##vegetation indices in R##
 
 #NDVI clculaion
-#lsat <- brick("")
+#import all layers and point to single bands with [[]]
+#lsat <- brick("path to your file name.tif")
 data(lsat)
 plot(lsat)
 ndvi <- (lsat[[4]]-lsat[[3]])/(lsat[[4]]+lsat[[3]])
 plot(ndvi)                               
 
+#or import single band rasters and point to individual objects
 ndvi <- (band_4-band_3)/(band_4+band_3)
 plot(ndvi)
 
-#if image is bigger the following way is better using overlay()
+#if image is bigger the following way is better using overlay(): single layers(object class: RasterLayer)
 ndvi <- overlay(band_4,band_3,fun=function(nir,red){(nir-red)/(nir+red)})
+#calc()multilayered (object class: RasterStack or RasterBrick)
 ndnvi <- calc(lsat,fun=function(x){(x[,4]-x[,3])/(x[,4]+x[,3])})
 
-#####hier wiederholen#seite 41 im pdf
-
+#or same function but also importing the resulting VI image
 #savi computation with automatic data export
 savi <- overlay(band_4,band_3,fun=function(nir,red){(nir-red)/(nir+red+0.5)*(1+0.5)},filename="savi.tif",format="GTiff")
+
+
+#######weiter pdf s.67############
 
 #rvi <- calc(lsat,fun=function(nir,red){(nir/red)})
 #plot(rvi)
