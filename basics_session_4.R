@@ -190,7 +190,7 @@ reprojected <- reprojectRaster(allbands,crs="+proj=longlat+ellps=WGS84+datum=WGS
 
 ##vegetation indices in R##
 
-#NDVI clculaion
+#NDVI calculaion
 #import all layers and point to single bands with [[]]
 #lsat <- brick("path to your file name.tif")
 data(lsat)
@@ -215,7 +215,7 @@ savi <- overlay(band_4,band_3,fun=function(nir,red){(nir-red)/(nir+red+0.5)*(1+0
 fun_ndvi <- function(nir,red){(nir-red)/(nir+red)}
 ndvi <- overlay(band_4,band_3,fun=fun_ndvi)
 
-#make yure your function can digest a matrix or vector (vector for processing a single layer, matrix otherwise)
+#make sure your function can digest a matrix or vector (vector for processing a single layer, matrix otherwise)
 #calc(...,forcefun=TRUE)#do not loop/query every pixel individually. Vectorize! and set
 #x <- lsat[1:10,]#get an example chunk and start from there
 
