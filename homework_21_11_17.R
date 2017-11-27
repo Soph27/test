@@ -272,29 +272,37 @@ summary(state.spdf1)
 ##2.6.2_Holes and Ring Direction## p.46 ????????????????????????????????????????????????
 
 MI <- load("high.RData")
-manitoulin_sp <- high[[4]] # woher weiß ich, dass ich 4 brauche?
+manitoulin_sp <- high[[4]]
 
 length(slot(manitoulin_sp,"polygons"))
+# checking for holes: hole slot (true/false):
 sapply(slot(slot(manitoulin_sp,"polygons")[[1]],"Polygons"),function(x)slot(x,"hole"))
+#checking for holes: ring direction (anti-clockwise=hole):
 sapply(slot(slot(manitoulin_sp,"polygons")[[1]],"Polygons"),function(x)slot(x,"ringDir"))
 
 library(rgeos)
 manitoulin_sp <- createSPComment(manitoulin_sp)
-sapply(slot(manitoulin_sp,"polygons"),comment)
+sapply(slot(manitoulin_sp,"polygons"),comment) # assign hole status: 0 for exterior rings
 
 ##2.7_SpatialGrid and SpatialPixel Objects##
 
 getClass("GridTopology")
 
-bb <- bbox(manitoulin_sp)
+# create GridTopology object from bounding box
+bb <- bbox(manitoulin_sp) # bbox of Manitoulin Island vector dataset
 bb
 
-getClass("SpatialGrid")
+cs <- c(0.01,0.01) # cell size of 0.01° in each direction
+cc <- bb[1,]+(cs/2) # offset south-west cell centre
+cd <- ceiling(diff(t(bb))/cs) # find suitable number of cells in each direction
+manitoulin_grd <- GridTopology(cellcentre.offset=cc,cellsize=cs,cells.dim=cd) # create GridTopology object
+manitoulin_grd
 
+getClass("SpatialGrid")
+#SpatialGrid object contains GridTopology and Spatial objects
 p4s <- CRS(proj4string(manitoulin_sp))
-manitoulin_SG <- SpatialGrid(manitoulin_grd,proj4string=p4s) #manitoulin.grd?????
+manitoulin_SG <- SpatialGrid(manitoulin_grd,proj4string=p4s)
 summary(manitoulin_SG)
-#######??????????data set manitoulin_sp??????????????????????????????????????????????????????????????
 
 library(rgdal)
 auck_el1 <- readGDAL("70042108.tif") # read data from Geotiff into SpatialGridDataFrame object
