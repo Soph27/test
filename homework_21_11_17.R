@@ -3,7 +3,7 @@
 
 
 install.packages("RStoolbox")
-library(RStoolbox)
+library('RStoolbox')
 install.packages("car")
 library(car)
 install.packages("raster")
@@ -68,7 +68,7 @@ cars
 
 #contrast how plot method displays relationship
 plot(dist~speed,data=cars) # between two numerical variables
-# ??? plot(dist~qspeed,date=cars) # between a numerical variable and a factor
+# ???? plot(dist~qspeed,date=cars) # between a numerical variable and a factor
 
 lm(dist~qspeed,data=cars)
 
@@ -80,6 +80,7 @@ getClass("CRS")
 
 #building of a simple spatial object from a bounding box matrix and a missing coordinate reference system
 m <- matrix(c(0,0,1,1),ncol=2,dimnames=list(NULL,c("min","max")))
+m
 crs <- CRS(projargs=as.character(NA))
 crs
 
@@ -88,6 +89,7 @@ S
 
 #???????????????????????????????????????????????????????????????????????
 bb <- matrix(c(350,85,370,95),ncol=2,dimnames=list(NULL,c("min","max")))
+bb
 Spatial(bb,proj4string=CRS("+proj=longlat"))
 # no error appears, why??????????????????????????????????????????????????
 
@@ -95,7 +97,8 @@ Spatial(bb,proj4string=CRS("+proj=longlat"))
 
 CRAN_df <- read.table("CRAN051001a.txt",header=TRUE)
 CRAN_mat <- cbind(CRAN_df$long,CRAN_df$lat) # extract columns long and lat into a matrix
-row.names(CRAN_mat) <- 1:nrow(CRAN_mat) # ??????????????????????????????????????????????????
+row.names(CRAN_mat) <- 1:nrow(CRAN_mat) # name rows as numbers
+CRAN_mat
 str(CRAN_mat) # view a digest
 
 getClass("SpatialPoints") # SpatialPoints adds a coords slot to Spatial class; matrix of point coordinates can be inserted
@@ -368,7 +371,7 @@ inMemory(out)
 
 plot(out,col=terrain.colors(100))
 
-#RasterLayer object can be coerced to SpatialGridDataFrame and back again
+#RasterLayer object can be coerced (zwingen) to SpatialGridDataFrame and back again
 r1 <- as(out,"SpatialGridDataFrame")
 summary(r1)
 
