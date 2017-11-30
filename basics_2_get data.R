@@ -286,7 +286,7 @@ library(move)
 data(lsat)#load/create example data; from RStoolbox and move package
 data(leroy)
 env <- raster(leroy,vals=rnorm(100))#create a raster with the properties (extent and projection of the vector)
-x <- lsat[[1]][1:2,]#values of rows one to ten#???????wieso zeigt es nicht nur rows 1 to 10 an?
+x <- lsat[1:10,]#values of rows one to ten of the matrix
 x
 x <- lsat[]#all values
 x <- getValues(lsat)#all values
