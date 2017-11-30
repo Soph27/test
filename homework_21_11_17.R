@@ -50,6 +50,7 @@ typeof(cars)
 #data.frame has both names and summary methods
 names(cars)
 summary(cars)
+data.frame(cars)
 
 #get information on object
 ls(cars)
@@ -62,15 +63,15 @@ class(dist~speed) # response variable ~ determining variable
 lm(dist~speed,data=cars) # linear model
 
 #create factor for speed by cutting into quartiles
-cars$qspeed <- cut(cars$speed,breaks=quantile(cars$speed),include.lowest=TRUE)
+cars$qspeed <- cut(cars$speed,breaks=quantile(cars$speed),include.lowest=TRUE) # include.lowest=TRUE nimmt kleinsten Wert in Intervalle mit rein; =FALSE schreibt für kleinsten Wert NA
 is.factor(cars$qspeed)
 cars
 
 #contrast how plot method displays relationship
 plot(dist~speed,data=cars) # between two numerical variables
-# ???? plot(dist~qspeed,date=cars) # between a numerical variable and a factor
+# ??? plot(dist~qspeed,date=cars) # between a numerical variable and a factor
 
-lm(dist~qspeed,data=cars)
+lm(qspeed~dist,data=cars)
 
 ##2.3_Spatial Objects## p.28
 library(sp)
