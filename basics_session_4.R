@@ -42,7 +42,7 @@ j <- j+0.1;print(j)
 
 myownfunction <- function(x,y){
   z <- x+y
-  return(z)
+  return(z) # return is needed if you want to return something else than thel ast value
   }
 
 #or
@@ -224,16 +224,23 @@ ndvi <- overlay(band_4,band_3,fun=fun_ndvi)
 rvi <- overlay(band_4,band_3,fun=function(nir,red){nir/red})#ratio VI
 plot(rvi)
 
-msavi <- overlay(band_4,band_3,fun=function(nir,red){(2*nir+1-sqrt((2*nir+1)^2-8*(nir-red)))})#modified soil-adjustet VI
+# falsche Werte kommen raus, müssen werte zwischen -1 und +1 sein!!!!?????????????
+msavi <- overlay(band_4,band_3,fun=function(nir,red){(2*nir+1-sqrt((2*nir+1)^2-8*(nir-red)))/2})#modified soil-adjustet VI
 plot(msavi)
+writeRaster(msavi,"msavi.tif")
+
+# try with calc():
+msavi <- calc(lsat,fun=function(nir,red){(2*nir+1-sqrt((2*nir+1)^2-8*(nir-red)))/2})
 
 #alternative command
 ndvi <- spectralIndices(lsat,red="B3_dn",nir="B4_dn",indices="NDVI")
 plot(ndvi)
 
 #compute all indices using RED and NIR
+library(RStoolbox)
 VIs <- spectralIndices(lsat,red="B3_dn",nir="B4_dn")
 plot(VIs)
+# if more bands are defined, more indices are computed
 
 #computing of more indices
 
