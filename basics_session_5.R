@@ -179,6 +179,10 @@ ggplot()+geom_point(data=mpg,aes(x=displ,y=hwy,colour=class))+facet_grid(manufac
 # alternative: guides(colour=guide_legend(title="type))
 
 # task: plot data of google spreadsheet
+install.packages("RCurl")
+library(RCurl)
 
-#homework: own skript for ggplot
+task <- getURL("https://docs.google.com/spreadsheets/d/e/2PACX-1vTbXxJqjfY-voU-9UWgWsLW09z4dzWsv9c549qxvVYxYkwbZ9RhGE4wnEY89j4jzR_dZNeiWECW9LyW/pub?gid=0&single=true&output=csv")
+read.csv(textConnection(task))
+
 ##ggplot2 and spatial data next week##
