@@ -230,7 +230,9 @@ plot(msavi)
 writeRaster(msavi,"msavi.tif")
 
 # try with calc():
-msavi <- calc(lsat,fun=function(nir,red){(2*nir+1-sqrt((2*nir+1)^2-8*(nir-red)))/2})
+#msavi <- calc(lsat,fun=function(nir,red){(2*nir+1-sqrt((2*nir+1)^2-8*(nir-red)))/2})
+#msavi <- calc(lsat,fun=function(x){(2*x[,4]+1-sqrt((2*x[,4]+1)^2-8*(x[,4]-x[,3])))/2})
+#plot(msavi)
 
 #alternative command
 ndvi <- spectralIndices(lsat,red="B3_dn",nir="B4_dn",indices="NDVI")
