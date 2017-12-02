@@ -33,28 +33,30 @@ names(bio_data)[1] <- "forest"
 # simple dot plot, beech basal area vs. ndvi:
 ggplot(bio_data$forest,aes(x=beech,y=ndvi))+geom_point()
 ggplot(bio_data$forest,aes(beech,ndvi,colour=height))+geom_point()+geom_smooth() # adding information
-ggplot(bio_data$forest,aes(beech,ndvi))+geom_point()+facet_wrap(~sub_basin) # faceting
+ggplot(bio_data$forest,aes(beech,ndvi))+geom_point()+facet_wrap(~sub_basin) # faceting (strings together ggplots in different frames (facets) based in a single variable)
 
 # you can also add several geom attributes:
-# boxplot with point "jitter"
+ggplot(bio_data$forest,aes(sub_basin,ndvi))+geom_boxplot(alpha=.5)+geom_point(aes(color=height),alpha=.7,size=1.5)
+# boxplot with point "jitter", jitter adds little random noise to data
 ggplot(bio_data$forest,aes(sub_basin,ndvi))+geom_boxplot(alpha=.5)+geom_point(aes(color=height),alpha=.7,size=1.5,position=position_jitter(width=.25,height=0))
 ggplot()+geom_point(data=bio_data$forest,aes(sub_basin,ndvi)) # same info as here but with many points less informative
 ggplot()+geom_point(data=bio_data$forest,aes(sub_basin,ndvi,colour=height)) # same but with colour
 #set width and height to 0 and you see all points are in one line (on top of each other)
 
-ggplot(bio_data$forest,aes(x=beech,y=ndvi))+geom_jitter()
+ggplot(bio_data$forest,aes(x=beech,y=ndvi))
+ggplot(bio_data$forest,aes(x=beech,y=ndvi))+geom_jitter() # means geom_point(position="jitter")
 ggplot(bio_data$forest,aes(x=beech,y=ndvi))+geom_boxplot()
 ggplot(bio_data$forest,aes(x=beech,y=ndvi))+geom_violin()+geom_jitter(aes(alpha=.7,size=2),colour="blue")
 
 # you can also "store" your plot:
 a <- ggplot()+geom_point(data=mpg,aes(x=displ,y=hwy,colour=class))
 # and then call your "stored" plot and add new options:
-a+theme_bw() # e.g. a new color scheme
+a+theme_bw() # e.g. a new color scheme (here: white background and grey gridlines)
 
 # for all further plots:
 theme_set(theme_bw())
 a # global settings
-a+theme_grey() # back to the default, for this one only
+a+theme_grey() # back to the default, for this one only (grey background and white gridlines)
 a # back to global settings
 theme_set(theme_grey()) # and back to default globally
 
@@ -70,7 +72,9 @@ a <- ggplot()+geom_point(data=mpg,aes(x=displ,y=hwy,colour=class))
 a+theme_bw() # for one plot
 # you can set the theme globally:
 theme_set(theme_bw())
-# theme_light(), theme_dark(), theme_minimal()...
+# theme_light() # light grey lines and axis
+# theme_dark() # dark background desinged to make colours pop out
+# theme_minimal()... # no background annotations
 # http://ggplot2.tidyverse.org/reference/ggtheme.html
 
 # define your theme:
