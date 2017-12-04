@@ -110,3 +110,109 @@ plot(meuse,pch=1,cex=sqrt(meuse$zinc)/20,add=TRUE)
 legVals <- c(100,200,500,1000,2000)
 legend("left",legend=legVals,pch=1,pt.cex=sqrt(legVals)/20,bty="n",title="measured")
 legend("topleft",legend=c("100-200","200-400","400-800","800-1800"),fill=grays,bty="n",title="interpolated")
+
+###3.2_Trellis/Lattice Plots with spplot###
+##3.2.1_a straight trellis example##
+library(lattice)
+levelplot(z~x+y|name,spmap.to.lev(zn[c("diredt","log")]),asp="iso")
+ssplot(zn[c("direct","log")])
+
+##3.2.2_Plotting points, lines, polygons and grids##
+library(maptools)
+data(meuse.grid)
+coordinates(meuse.grid) <- c("x","y")
+meuse.grid <- as(meuse.grid,"SpatialPixelsDataFrame")
+im <- as.image.SpatialGridDataFrame(meuse.grid["dist"])
+cl <- ContourLines2SLDF(contourLines(im))
+ssplot(cl)
+
+river <- list("sp.polygons",meuse.pol)
+north <- list("SpatialPolygonsRescale",layout.north.arrow(),offset=c(178750,332500),scale=400)
+scale <- list("SpatialPolygonsRescale",layout.scale.bar(),offset=c(180200,329800),scale=1000,fill=c("transparent","black"))
+txt1 <- list("sp.text",c(180200,329950),"0")
+txt2 <- list("sp.text",c(181200,329950),"1 km")
+pts <- list("sp.points",meuse,pch=3,col="black")
+meuse.layout <- list(river,north,scale,txt1,txt2,pts)
+ssplot(zn["log"],sp.layout=meuse.Layout)
+
+##3.2.4_Arranging panel layout## p.74
+
+###3.3_Alternative routes:ggplot, latticeExtra###
+library(ggplot2)
+methods(fortify)
+
+m=as(meuse,"data.frame")
+ggplot(m,aes(x,y))+geom_point()+coord_equal()
+
+library(latticeExtra)
+p=ssplot(meuse["zinc"])
+m=SpatialPolygonsDataFrame(meuse.pol,data.frame(col=1),match.ID=FALSE)
+l=ssplot(m)
+l+p
+p+l
+
+###3.4_Interactive plots### p.76
+##3.4.1_Interacting with base graphics##
+plot(meuse)
+meuse.id <- identify(coordinates(meuse))
+
+plot(meuse)
+region <- locator(type="o")
+n <- length(region$x)
+p <- Polygon(cbind(region$x,region$y)[c(1:n,1),],hole=FALSE)
+ps <- Polygons(list(p),ID="region")
+sps <- SpatialPolygons(list(ps))
+plot(meuse[sps,],pch=16,cex=0.5,add=TRUE)
+
+library(maptools)
+prj <- CRS("+proj=longlat +datum=NAD27")
+nc_shp <- system.file("shapes/sids.shp",package="maptools")[1]
+nc <- readShapePoly(nc_shp,proj4string=prj)
+plot(nc)
+pt <- locator(type="p")
+print(pt)
+pt.sp <- SpatialPoints(cbind(pz$x,pt$y),proj4string=prj)
+over(pt.sp,nc)
+
+##3.4.2_Interacting with ssplot and Lattice plots##
+ids <- ssplot(meuse,"zinc",identify=TRUE)
+
+library(lattice)
+trellis.focus("panel",column=1,row=1)
+ids <- panel.identify()
+trellis.unfocus()
+
+library(grid)
+trellis.focus("panel",column=1,row=1)
+as.numeric(grid.locator())
+trellis.unfocus()
+
+###3.5_Colour palettes and class intervals### p.79
+##3.5.1_colour palettes##
+rw.colors <- colorRampPalette(c("red","white"))
+image(meuse.grid["dist"],col=rw.colors(10))
+
+library(RColorBrewer)
+example(brewer.pal)
+
+##3.5.2_class intervals##
+library(RColorBrewer)
+library(classInt)
+pal <- brewer.pal(5,"Reds")
+q5 <- classIntervals(meuse$zinc,n=5,style="quantile")
+q5
+diff(q5$brks)
+plot(q5,pal=pal)
+fj5 <- classIntervals(meuse$zinc,n=5,style="fisher")
+fj5
+diff(fj5$brks)
+plot(fj5,pal=pal)
+
+q5Colours <- findColours(q5,pal)
+plot(meuse,col=q5Colours,pch=19)
+legend("topleft",fill=attr(q5Colours,"palette"),legend=names(attr(q5Colours,"table")),bty="n")
+
+cuts=(0:10)/10
+ssplot(meuse.grid,"dist",colorkey=list(labels=list(at=cuts)),at=cuts)
+
+
