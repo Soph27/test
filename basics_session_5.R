@@ -1,4 +1,5 @@
-###session_5_28.11.17###classification & RStoolbox###
+###session_5_28.11.17####################################################
+###classification & RStoolbox############################################
 
 # a list from two vectors of different size:
 a <- runif(199) # uniform & random variates (Zufallsvariable)
@@ -42,6 +43,7 @@ y <- j+0.1;print(j)
 # Ergebnis falsch, endlos schleife!!!!!!
 # RS application: resample data until certain resolution is met (until you reach certain threshold in steps of _ )
 
+##################################################################################################################################
 
 ## classification = cluster algorithm ##
 
@@ -54,10 +56,11 @@ allbands
 
 library(RStoolbox)
 uc <- unsuperClass(allbands,nClasses=5)
-uc
+uc # is a list containing all information and the map
 str(uc)
 plot(uc$map) # point to map inside unsupervied output
 
+# what unsuperClass is doing step by step:
 # run kmeans clustering on data of raster object (indicated by [] = brackets for accessing data) with 5 classes:
 landsat_allbands.kmeans <- kmeans(allbands[],5)
 # copy raster attributes to new raster file:
@@ -65,6 +68,7 @@ kmeansraster <- raster(allbands) # create an empty raster based on allbands with
 # populate empty raster file with cluster values from kmeans():
 kmeansraster[] <-landsat_allbands.kmeans$cluster #without [] k would be overwritten
 plot(kmeansraster)
+# [] means don`t use spatial object but just data of spatial object
 
 # clustering with 3 (initial) classes and merging the result with the existing raster file
 ## dealing with missing values
@@ -76,6 +80,12 @@ valid <- complete.cases(values) # just use complete cases
 valid
 allbands.kmeans <- kmeans(values[valid],5,iter.max=100,nstart=3) # run the kmeans clustering
 kmeansraster[valid] <- allbands.kmeans$cluster # populate empty vector with cluster values derived from kmeans()
+
+# try with different classification statistical algorithms
+install.packages("pamr")
+library(pamr)
+#landsat_allbands.PAM <- pam(allbands[],8)
+
 
 ## changing the color settings in R and plotting the result
 
@@ -100,6 +110,7 @@ plot(kmeansraster,col=color,axis.arg=arg)
 # explore other suitable R functions (e.g. PAM, mean shift)
 # add/remove layers for the classification (e.g. add a DEM, slope, texture)
 
+##########################################################################################################################
 
 ## ggplot2_grammar ##
 install.packages("ggplot2")
@@ -128,8 +139,10 @@ head(bio_data)
 
 steigerwald <- load("bio_data.rda")
 steigerwald
+bio_data
 names(bio_data)
 names(bio_data)[1] <- "forest"
+bio_data$forest
 
 # simple dot plot, beech basal area vs. ndvi:
 ggplot(bio_data$forest,aes(x=beech,y=ndvi))+geom_point()
@@ -178,11 +191,53 @@ theme_set(theme_bw())
 ggplot()+geom_point(data=mpg,aes(x=displ,y=hwy,colour=class))+facet_grid(manufacturer~class)+ggtitle("EAGLE chart")+theme(plot.title=element_text(angle=0,size=22,colour="hotpink"))+scale_colour_discrete(name="type")
 # alternative: guides(colour=guide_legend(title="type))
 
-# task: plot data of google spreadsheet
+#######################################################################################################################################################################################################################
+
+# task: plot data of google spreadsheet # session 6, 6_12_17
 install.packages("RCurl")
-library(RCurl)
+library(RCurl) # activate needed package
 
+# get the data:
 task <- getURL("https://docs.google.com/spreadsheets/d/e/2PACX-1vTbXxJqjfY-voU-9UWgWsLW09z4dzWsv9c549qxvVYxYkwbZ9RhGE4wnEY89j4jzR_dZNeiWECW9LyW/pub?gid=0&single=true&output=csv")
-read.csv(textConnection(task))
+x <- read.csv(textConnection(task))
 
-##ggplot2 and spatial data next week##
+# inspect the data:
+x
+summary(x)
+
+install.packages("reshape2")
+library(reshape2)
+# reformat data to suit ggplot needs if names should be on x-axis & time on y-axis: look at data to see changes
+x2 <- melt(data=x) 
+str(x2)
+ggplot(x2,aes(x=variable,y=value))+geom_boxplot() # plot data as boxplot
+
+# compute cummulative sum & add it with the names to a new data frame
+x.cs <- data.frame(variable=names(x) ,cs=t(cumsum(x)[nrow(x),])) #cumsum is in last row & we index that
+names(x.cs) <- c("variable","cumsum") # change names to fit melt output & to be able to merge it later on
+x2 <- melt(data=x) # reshaping data: look at data to see the differences
+
+# merge two dataframes based on "variable" column name (your names)
+x3 <- merge(x.cs,x2,by.x="variable",all=T)
+ggplot(x3,aes(x=variable,y=value,color=cumsum))+geom_point() # plot the sum as colour
+# plot point plus boxplot & add a jitter (again: important to inform if jitter is used):
+ggplot(x3,aes(x=variable,y=value,color=cumsum))+geom_boxplot(alpha=.5)+geom_point(alpha=.7,size=1.5,position=position_jitter(width=.25,height=.5))
+
+# add even more information:
+install.packages("gender") # load library that aims to detect gender (trained mainly on North America)
+library(gender)
+x.g <- gender(names(x)) # run gender detection on the names
+colnames(x.g)[1] <- "variable" # change column name of names to "variable" again for later merging
+x4 <- merge(x3,x.g,by.x="variable",all=T) # merge it with previously created data
+# plot time per person divided by gender, plot stored in "a":
+a <- ggplot(x4,aes(x=variable,y=value,color=cumsum))+geom_boxplot()+facet_wrap(~gender)
+a # call plot
+print(x.g) # probabilities of gender
+
+# plot is not perfect, e.g. names can hardly be read:
+a+coord_flip()
+a+theme(axis.text.x=element_text(angle=45,vjust=1,hjust=1))
+
+#task: a boxplotw/ and w/o different jitter values - & grouped by gender
+#task: plot probabilities of gender
+#task: change settings of gender detection, e.g. years or  countries
