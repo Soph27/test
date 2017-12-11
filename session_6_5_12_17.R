@@ -79,8 +79,15 @@ map <- get_map("Bavaria") # get an overview map
 ggmap(map,zoom=6) # zoom in
 ggmap(map)
 
-lsat.df <- data.frame(coordinates(lsat),getValues(lsat)) # extract underlying data frame values
-lsat.df <- lsat.df[lsat.df$B1_dn!=0,] # optional: remove background if needed, not with lsat data set
+install.packages("sp")
+library(sp)
+install.packages("RStoolbox")
+library(RStoolbox)
+install.packages("raster")
+library(raster)
+data(lsat)
+lsat.df <- data.frame(coordinates(lsat),getValues(lsat)) # create data.frame and extract underlying data frame values
+#lsat.df <- lsat.df[lsat.df$B1_dn!=0,] # optional: remove background if needed, not with lsat data set
 # plot the data and specify which band to be used:
 ggplot(lsat.df)+geom_raster(aes(x=x,y=y,fill=B3_dn))+scale_fill_gradient(na.value=NA)+coord_equal()
 # same as above but other color gradient:
@@ -90,7 +97,7 @@ ggplot(lsat.df)+geom_raster(aes(x=x,y=y,fill=B3_dn))+scale_fill_gradient(low="bl
 a <- ggplot(lsat.df)+geom_raster(aes(x=x,y=y,fill=B3_dn))+scale_fill_gradient(low="black",high="white",na.value=NA)+coord_equal()
 a # just call "a", hence plot it
 # get a spatial vector from the RStoolbox package
-poly <- readRDS(system.file("external/trainingPolygons.rds",package="RStoolbox"))
+poly <- readRDS(system.file("external/trainingPolygons.rds",package="RStoolbox")) #readRDS function to write a single object too a file and restore it
 plots <- as.data.frame(coordinates(poly)) # extract the coordinates
 plots # look up x,y
 # plot the previously stored plot plus the vector data:
@@ -99,7 +106,7 @@ a+guides(fill=guide_colorbar())+geom_point(data=plots,aes(x=V1,y=V2),shape=3,col
 # limit extent if you like to plot only certain part or data in case other data sets cover a larger area:
 lim <- extent(lsat)
 # use stored plot plus new plotting commands:
-a+(fill=guide_colorbar())+geom_point(data=plpots,aes(x=V1,y=V2),shape=3,colour="yellow")+theme(axis.title.x=element_blank())+scale_x_continuous(limits=c(lim@xmin,lim@xmax))+ylim(c(lim@ymin,lim@ymax))
+a+guides(fill=guide_colorbar())+geom_point(data=plots,aes(x=V1,y=V2),shape=3,colour="yellow")+theme(axis.title.x=element_blank())+scale_x_continuous(limits=c(lim@xmin,lim@xmax))+ylim(c(lim@ymin,lim@ymax))
 
 # define your own them to have fitting graphs and maps:
 #themeSet <- function(type="plot"){
