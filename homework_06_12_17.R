@@ -68,10 +68,10 @@ c(as(IJ_east, "numeric"), as(IJ_north, "numeric"))
 ##4.2.1 Using OGR Drivers in rgdal## p.92
 head(ogrDrivers(), n = 10)
 vignette("OGR_shape_encoding", package = "rgdal")
-scot_dat <- read.table("G:\\EAGLE\\scotland.txt", skip = 1)
+scot_dat <- read.table("C:\\Users\\Sophie\\Documents\\test\\scotland.txt", skip = 1)
 names(scot_dat) <- c("District", "Observed", "Expected","PcAFF", "Latitude", "Longitude")
 getwd()
-setwd("G:\\EAGLE")
+setwd("C:\\Users\\Sophie\\Documents\\test")
 ogrInfo(".","scot") # show summary of layer; "." means current working directory
 scot_LL <- readOGR(dsn = ".", layer = "scot") # read/ import from working directory
 proj4string(scot_LL) # see if data has coordinate reference system (here: NA)
@@ -108,7 +108,7 @@ list.files(pattern = "^scot_BNG")
 
 load("geohub.RData")
 dsn <- "WFS:http://geohub.jrc.ec.europa.eu/effis/ows"
-#ogrListLayers(dsn) # check for available layers # geht nicht mehr, Daten müssen gedownloaadet und reingeladen werden:
+#ogrListLayers(dsn) # check for available layers # geht nicht mehr, Daten m?ssen gedownloaadet und reingeladen werden:
 Fires <- readOGR(".", "fires_120104")
 names(Fires)
 
@@ -128,8 +128,9 @@ spl <- list("sp.lines", slbb, lwd = 0.7, col = "khaki4")
 
 # convert the input fire date to a Date object:
 Fires$dt <- as.Date(as.character(Fires$FireDate), format = "%d-%m-%Y")
-Fires0 <- Fires[-which(coordinates(Fires)[, 2] < 0),] # discard (wegwerfen) any incidents on Réunion
+Fires0 <- Fires[-which(coordinates(Fires)[, 2] < 0),] # discard (wegwerfen) any incidents on R?union
 Fires1 <- Fires0[order(Fires0$dt),]
+install.packages("spacetime")
 library(spacetime)
 Fires2 <- STIDF(as(Fires1, "SpatialPoints"), Fires1$dt,as(Fires1, "data.frame"))
 stplot(as(Fires2,"STI"),number = 3, sp.layout = spl, cex = 0.5) # plot 3 incident maps, conditioned by time quantiles
@@ -171,6 +172,7 @@ Gi <- GDALinfo("demIndex.tif", returnColorTable = TRUE)
 CT <- attr(Gi, "ColorTable")[[1]]
 CT[CT > "#000000"]
 
+install.packages("gstat")
 library(gstat)
 # output inverse distance weighted interpolated values of Meuse Bank logarithms of zinc ppm as a GeoTiff file:
 log_zinc <- idw(log(zinc) ~ 1, meuse, meuse.grid)["var1.pred"]
