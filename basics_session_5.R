@@ -38,9 +38,8 @@ if(a!=5){print("number is not equal 5")}else{print("number is equal 5")}
 j <- 0
 while(j<1)
   {
-y <- j+0.1;print(j)
+j <- j+0.1;print(j)
 }
-# Ergebnis falsch, endlos schleife!!!!!!
 # RS application: resample data until certain resolution is met (until you reach certain threshold in steps of _ )
 
 ##################################################################################################################################
@@ -209,16 +208,20 @@ install.packages("reshape2")
 library(reshape2)
 # reformat data to suit ggplot needs if names should be on x-axis & time on y-axis: look at data to see changes
 x2 <- melt(data=x) 
+x2
 str(x2)
 ggplot(x2,aes(x=variable,y=value))+geom_boxplot() # plot data as boxplot
 
 # compute cummulative sum & add it with the names to a new data frame
 x.cs <- data.frame(variable=names(x) ,cs=t(cumsum(x)[nrow(x),])) #cumsum is in last row & we index that
+x.cs
 names(x.cs) <- c("variable","cumsum") # change names to fit melt output & to be able to merge it later on
+x.cs
 x2 <- melt(data=x) # reshaping data: look at data to see the differences
-
+x2
 # merge two dataframes based on "variable" column name (your names)
 x3 <- merge(x.cs,x2,by.x="variable",all=T)
+x3
 ggplot(x3,aes(x=variable,y=value,color=cumsum))+geom_point() # plot the sum as colour
 # plot point plus boxplot & add a jitter (again: important to inform if jitter is used):
 ggplot(x3,aes(x=variable,y=value,color=cumsum))+geom_boxplot(alpha=.5)+geom_point(alpha=.7,size=1.5,position=position_jitter(width=.25,height=.5))
@@ -227,16 +230,19 @@ ggplot(x3,aes(x=variable,y=value,color=cumsum))+geom_boxplot(alpha=.5)+geom_poin
 install.packages("gender") # load library that aims to detect gender (trained mainly on North America)
 library(gender)
 x.g <- gender(names(x)) # run gender detection on the names
+x.g
 colnames(x.g)[1] <- "variable" # change column name of names to "variable" again for later merging
+x.g
 x4 <- merge(x3,x.g,by.x="variable",all=T) # merge it with previously created data
+x4
 # plot time per person divided by gender, plot stored in "a":
 a <- ggplot(x4,aes(x=variable,y=value,color=cumsum))+geom_boxplot()+facet_wrap(~gender)
 a # call plot
 print(x.g) # probabilities of gender
 
 # plot is not perfect, e.g. names can hardly be read:
-a+coord_flip()
-a+theme(axis.text.x=element_text(angle=45,vjust=1,hjust=1))
+a+coord_flip() # change x and y axes
+a+theme(axis.text.x=element_text(angle=45,vjust=0,hjust=0)) # vjust/hjust: 0 means left-justified, 1 means right-justified
 
 #task: a boxplotw/ and w/o different jitter values - & grouped by gender
 #task: plot probabilities of gender
