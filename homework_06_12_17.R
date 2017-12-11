@@ -203,6 +203,14 @@ head(gdalDrivers(), n = 10) # show first 10 drivers on book production platform
 writeGDAL(log_zinc, fname = "log_zinc.rda", drivername = "R") # driver for storing portable SpatialGrid-DataFrame objects
 GDALinfo("log_zinc.rda")
 
+#from online code:
+options(width=55)
+GDALinfo("log_zinc.rda")
+options(width=70)
+
+unlink("log_zinc.rda*")
+#bringt aber irgendwie nichts, klappt trotzdem nicht??????!!!!!!!!!!!!!!!!!!!
+
 # read a raster version of OpenStreetMap19 data for the centre of Bergen, Norway:
 service_xml <- "frmt_wms_openstreetmap_tms.xml"
 offset <- c(19339000, 34546000)
@@ -276,6 +284,9 @@ streams <- readVECT6("streams", type = "line,boundary",remove.duplicates = FALSE
 summary(bugsDF)#???????????????????????????????????????????????????????????????????????????bis hier???????????
 
 ##4.5.1 broad street cholera data## p.118 #????????????????????????????????????????????????????von hier bis Ende???
+execGRASS("g.gisenv", set="LOCATION_NAME=snow2")
+execGRASS("g.region", rast="snowcost_broad")
+
 sohoSG <- readRAST6(c("snowcost_broad", "snowcost_not_broad"))
 buildings <- readVECT6("vsnow4")
 proj4string(sohoSG) <- CRS(proj4string(buildings))
@@ -303,6 +314,5 @@ d_b_pump <- rSPDistance(tr, deaths, b_pump, theta = 1e-12)
 d_nb_pump <- rSPDistance(tr, deaths, nb_pump, theta = 1e-12)
 deaths$g_snowcost_broad <- d_b_pump[, 1]
 deaths$g_snowcost_not_broad <- apply(d_nb_pump, 1, min)
-deaths$g_b_nearer <- deaths$g_snowcost_broad < deaths
-$g_snowcost_not_broad
+deaths$g_b_nearer <- deaths$g_snowcost_broad < deaths$g_snowcost_not_broad
 by(deaths$Num_Cases, deaths$g_b_nearer, sum)
