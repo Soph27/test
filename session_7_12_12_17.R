@@ -1,6 +1,7 @@
 ###session 7, 12.12.17###################################
-###supervised classification#############################
+###classifications and related topics#############################
 
+### funny packages:
 install.packages("fortunes")
 library(fortunes)
 fortune() # call a quote
@@ -19,8 +20,7 @@ someone_say_my_fortune <- function(x){
 }
 someone_say_my_fortune()
 
-
-# send mail:
+## send mail:
 install.packages("sendmailR")
 library(sendmailR)
 
@@ -45,13 +45,17 @@ library(ggmap)
 install.packages("ggalt")
 library(ggalt)
 
-wue <- geocode("Wuerzburg")
+# get coordinates:
+wue <- geocode("Wuerzburg") # get longitude and latitude
+# get Google Hybrid Map (alternative roads, satellite or osm (open street map)):
 wue_ggl_hybrid_map <- qmap("wue",zoom=12,source="google",maptype="hybrid")
+# get coordinates for certain places:
 wue_places <- c("Zellerau",
   "Sanderau",
   "Gerbrunn",
   "Estenfeld")
-places_loc <- geocode(wue_places)
+places_loc <- geocode(wue_places) # get longitudes and latitudes
+# plot hybrid map with dots of places and a circle around them:
 wue_ggl_hybrid_map+geom_point(aes(x=lon,y=lat),
     data=places_loc,
     alpha=0.7,
@@ -59,6 +63,7 @@ wue_ggl_hybrid_map+geom_point(aes(x=lon,y=lat),
     solor="tomato")+
   geom_encircle(aes(x=lon,y=lat),
     data=places_loc,size=2,color="blue")
+
 #####################################################################
 ###supervised classification:
 install.packages("rgdal")
@@ -69,54 +74,58 @@ library(RStoolbox)
 install.packages("e1071")
 library(e1071)
 
-#########################################################
 install.packages("raster")
 library(raster)
-allbands <- brick("E:\\EAGLE\\crop_p224r63_all_bands.tif")
-td <- rgdal::readOGR("E:\\EAGLE","superClass_trainingdata")
+allbands <- brick("C:\\Users\\Sophie\\Documents\\test\\crop_p224r63_all_bands.tif")
+plotRGB(allbands,3,2,1,stretch="lin")
+
+td <- rgdal::readOGR("C:\\Users\\Sophie\\Documents\\test","superClass_trainingdata")
 sc <- superClass(allbands,trainData=td,responseCol="id") # ohne defined model random forest (rf) is used
 plot(sc$map)
-#sc2 <- superClass(allbands,trainData=td,responseCol="id",model="....")
+sc
+summary(sc)
+
 getModelInfo()
 #library(caret) #superClass() basiert auf caret package
-# responseCol muss id sein????????????????????????????????????????????????????????????????????
 
 sc2 <- superClass(allbands,trainData=td,responseCol="id",model="svmLinear")
 plot(sc2$map)
 
-sc
-summary(sc)
+sc3 <- superClass(allbands,trainData=td,responseCol="id",model="nnet")
+plot(sc3$map)
+
 getwd()
-setwd("E:\\EAGLE\\MB2-programming\\test")
+setwd("C:\\Users\\Sophie\\Documents\\test")
 writeRaster(sc$map,filename="superClassresult",format="GTiff",overwrite=TRUE)
 writeRaster(sc2$map,filename="superClassresult_svmLinear",format="GTiff",overwrite=TRUE)
-
-#plotRGB(allbands,3,2,1,stretch="lin")
+writeRaster(sc3$map,filename="superClassresult_nnet",format="GTiff",overwrite=TRUE)
 
 library(RStoolbox)
 # stack raster:
-raster_stack <- stack(sc$map,sc2$map)
-Class_comparison <- rasterEntropy(raster_stack) # analyse differences in classification results (RStoolbox)
-plot(Class_comparison)
+raster_stack <- stack(sc$map,sc2$map,sc3$map)
+superClass_comparison <- rasterEntropy(raster_stack) # analyse differences in classification results (RStoolbox)
+plot(superClass_comparison)
 
 ###############################################################################################################
-###redo superClass with actual R code###
+###redo superClass with actual R code:
 library(maptools)
 library(randonForest)
 library(raster)
 setwd()
 
-# enter path and name (without suffix) to the import vector command
+# enter path and name (without suffix) to the import vector command:
 vec <- readOGR('vector_data','training')
 satImage <- brick("raster_data/input_data.tif")
 numsamps <- 100 # number of samples per land cover class
-attName <- 'ID'
+attName <- 'ID' # name of attribute holding the integer land cover type identifier (very important to consider when doing the training data sets)
 outImage <- 'classif_result.tif' # name and path of output GeoTiff image
 
+# loop over each class, selecting all polygons and assign random points:
 uniqueAtt <- unique(vec[[attName]])
-for (x in 1:length(uniqueAtt)){ # uniqueAtt=number of classes; x is class
-  class_data <- vec[vec[[attName]]==uniqueAtt[x],] # subset vector data
-  classpts <- spsample(class_data,type="random",n=numsamps)
+for (x in 1:length(uniqueAtt)){ # query number of classes; uniqueAtt=number of classes; x is class
+  class_data <- vec[vec[[attName]]==uniqueAtt[x],] # extract polygons with class n; subset vector data
+  classpts <- spsample(class_data,type="random",n=numsamps) # set 100 random points (as defined above) inside each polygon landcover class (in selected polygons)
+  #first run: create new spatial points data frame; for all subsequent ones, data will be added:
   if(x==1){ # without if we would only have data for second class;
     xy <- classpts
   }else{
@@ -124,31 +133,36 @@ for (x in 1:length(uniqueAtt)){ # uniqueAtt=number of classes; x is class
   }
 }
 
-pdf("training_points.pdf")
+# plot randomly generated points on one of the rasters - for visual checking only:
+pdf("training_points.pdf") # image will be saved in filesystem as pdf (generates pdf with raster and sampling points)
   image(satImage,1)
   points(xy)
 #dev.off()
 
+# extract reference and pixel values for training data:
 temp <- over(x=xy,y=vec) # extract values of vector behind random points
 response <- factor(temp[[attName]]) # create vector of attribute names
 trainvals <- cbind(response,extract(satImage,xy)) # combines point with raster values (values of all bands are extracted, not coordinates)
+# extracting and combination of classes and band values
 
-print()
-randfor <- randomForest(as.factor(response)~.,
-                        data=trainvals,
-                        na.action=na.omit,
-                        confusion=T)
-# ~means take everything in your data frame
+# the actual classification statistics using randomForest method:
+print("Starting to calculate random forest object")
+randfor <- randomForest(as.factor(response)~., # ~ means take everything in your data frame
+  data=trainvals,
+  na.action=na.omit,
+  confusion=T)
 
+# apply fitted model to full raster (predict):
 print("Starting predictions")
 predict(satImage,randfor,filename=outImage,progress='text',format='GTiff',datatype='INT1U',type='response',overwrite=TRUE)
+# using all band values of all pixels to generate a classification
 
 ####################################################################################################################
 # validation: how good is classification?
-validationPolygons <- rgdal::readOGR("E:\\EAGLE\\MB2-programming\\test\\vector_data","trainingdata")
-sc <- superClass(allbands,trainData=td,responseCol="id",trainPartition=0.7) # hold out proportion
-#sc <- superClass(allbands,trainData=td,valData=validationPolygons,responseCol="id") # pre-defined hold-outs
-#sc$validation$performance
-# katrins attributtabelle muss noch umbenannt werden von land cover zu class oder wie es bei mir heisst!!
+library(rgdal)
+validationPolygons <- rgdal::readOGR("C:\\Users\\Sophie\\Documents\\test\\vector_data","trainingdata")
+sc <- superClass(allbands,trainData=td,responseCol="class_name",trainPartition=0.7) # hold out proportion
+sc <- superClass(allbands,trainData=td,valData=validationPolygons,responseCol="class_name") # pre-defined hold-outs
+sc$validation$performance
 
-#validateMap()
+#val <- validateMap(sc$map,valData=validationPolygons,responseCol="class_name",mode="classification") # validate an existing map with reference data
