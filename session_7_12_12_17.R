@@ -165,4 +165,6 @@ sc <- superClass(allbands,trainData=td,responseCol="class_name",trainPartition=0
 sc <- superClass(allbands,trainData=td,valData=validationPolygons,responseCol="class_name") # pre-defined hold-outs
 sc$validation$performance
 
-#val <- validateMap(sc$map,valData=validationPolygons,responseCol="class_name",mode="classification") # validate an existing map with reference data
+library(RStoolbox)
+val <- validateMap(sc$map,valData=validationPolygons,responseCol="class_name",mode="classification",classMapping = sc$classMapping) # validate an existing map with reference data
+val
