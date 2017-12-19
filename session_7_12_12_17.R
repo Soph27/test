@@ -81,10 +81,16 @@ plotRGB(allbands,3,2,1,stretch="lin")
 
 td <- rgdal::readOGR("C:\\Users\\Sophie\\Documents\\test","superClass_trainingdata")
 sc <- superClass(allbands,trainData=td,responseCol="id") # ohne defined model random forest (rf) is used
-plot(sc$map)
+plot(sc$map,colour=id)
+
+# how to change colour bar to onlyy three colours like id & class_name?
+#install.packages("spplot")
+#library(spplot)#spplot()
+#plot(sc$map,col=class_name(3))#geht nicht???????????????????????????????
+
 sc
 summary(sc)
-
+sc$map
 getModelInfo()
 #library(caret) #superClass() basiert auf caret package
 
@@ -121,7 +127,7 @@ attName <- 'ID' # name of attribute holding the integer land cover type identifi
 outImage <- 'classif_result.tif' # name and path of output GeoTiff image
 
 # loop over each class, selecting all polygons and assign random points:
-uniqueAtt <- unique(vec[[attName]])
+uniqueAtt <- unique(vec[[attName]]) # define unique values of vector and attribute name
 for (x in 1:length(uniqueAtt)){ # query number of classes; uniqueAtt=number of classes; x is class
   class_data <- vec[vec[[attName]]==uniqueAtt[x],] # extract polygons with class n; subset vector data
   classpts <- spsample(class_data,type="random",n=numsamps) # set 100 random points (as defined above) inside each polygon landcover class (in selected polygons)
@@ -133,6 +139,8 @@ for (x in 1:length(uniqueAtt)){ # query number of classes; uniqueAtt=number of c
   }
 }
 
+#exercise: change points e.g. from random to regular
+
 # plot randomly generated points on one of the rasters - for visual checking only:
 pdf("training_points.pdf") # image will be saved in filesystem as pdf (generates pdf with raster and sampling points)
   image(satImage,1)
@@ -143,11 +151,11 @@ pdf("training_points.pdf") # image will be saved in filesystem as pdf (generates
 temp <- over(x=xy,y=vec) # extract values of vector behind random points
 response <- factor(temp[[attName]]) # create vector of attribute names
 trainvals <- cbind(response,extract(satImage,xy)) # combines point with raster values (values of all bands are extracted, not coordinates)
-# extracting and combination of classes and band values
+# extraction and combination of classes and band values
 
 # the actual classification statistics using randomForest method:
 print("Starting to calculate random forest object")
-randfor <- randomForest(as.factor(response)~., # ~ means take everything in your data frame
+randfor <- randomForest(as.factor(response)~., # ~ means take everything in your data frame; ~ means against dot values
   data=trainvals,
   na.action=na.omit,
   confusion=T)
@@ -168,3 +176,5 @@ sc$validation$performance
 library(RStoolbox)
 val <- validateMap(sc$map,valData=validationPolygons,responseCol="class_name",mode="classification",classMapping = sc$classMapping) # validate an existing map with reference data
 val
+# usually: validateMap used if validation data is available, if not then do validation with superClass() and trainPartition
+
