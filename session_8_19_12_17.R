@@ -15,7 +15,7 @@ playSudoku()
 #######################################################################
 install.packages("BRRR")
 library(BRRR)
-if(!require(devtools)){isntall.packages(devtools)}
+if(!require(devtools)){install.packages(devtools)}
 devtools::install_github("brooke-watson/BRRR")
 skrrrahh("drummaboy")
 skrrrahh("snoop")
@@ -68,14 +68,14 @@ gNearestPoints() #
 ##############################################################################################
 ### land cover change analysis ###
 # method to use depends on kind of landscape you have and aim of study
-
+# superClass() for postclassification and multidate classification
 ## postclassification (analysis)
 #..................????????????????????????????
 
 ## multidate (analysis): don`t map land cover classes but land cover change (-->change classes)
 #..................????????????????????????????
 
-## change vector (analysis)
+## change vector (analysis) with rasterCVA()
 x88 <- brick("data/raster_data/final/p224r63_1988.gri")
 x11 <- brick("data/raster_data/final/p224r63_2011.gri")
 
