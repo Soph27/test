@@ -109,7 +109,7 @@ writeRaster(sc3$map,filename="superClassresult_nnet",format="GTiff",overwrite=TR
 library(RStoolbox)
 # stack raster:
 raster_stack <- stack(sc$map,sc2$map,sc3$map)
-superClass_comparison <- rasterEntropy(raster_stack) # analyse differences in classification results (RStoolbox)
+superClass_comparison <- rasterEntropy(raster_stack) # analyse differences in classification results (RStoolbox) # spatial comparison of classifications with rasterEntropy()
 plot(superClass_comparison)
 
 ###############################################################################################################
